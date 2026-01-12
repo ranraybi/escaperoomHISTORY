@@ -27,6 +27,7 @@
             border: 4px solid #3f453f;
             box-shadow: 0 0 0 2px #1a1c1a, 0 20px 50px rgba(0,0,0,0.8);
             position: relative;
+            transition: all 0.5s ease;
         }
 
         .paper-slot {
@@ -62,6 +63,17 @@
             display: inline-block;
         }
 
+        .success-text {
+            color: #4ade80;
+            text-shadow: 0 0 20px rgba(74, 222, 128, 0.5);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
             25% { transform: translateX(-5px); }
@@ -79,17 +91,15 @@
         function HistoricalLock() {
             const SECRET_CODE = "46345";
             const MAX_ATTEMPTS = 3;
-            const LOCKOUT_DURATION = 30; // שניות
+            const LOCKOUT_DURATION = 30;
 
             const [input, setInput] = useState("");
             const [status, setStatus] = useState("idle"); 
             
-            // טעינת ניסיונות מהזיכרון
             const [attempts, setAttempts] = useState(() => {
                 return parseInt(localStorage.getItem('archive_attempts')) || 0;
             });
 
-            // בדיקה אם המשתמש היה בחסימה לפני ריענון הדף
             const [lockoutTimer, setLockoutTimer] = useState(() => {
                 const savedExpiry = localStorage.getItem('archive_lock_expiry');
                 if (savedExpiry) {
@@ -99,7 +109,6 @@
                 return 0;
             });
 
-            // ניהול טיימר החסימה
             useEffect(() => {
                 let interval;
                 if (lockoutTimer > 0) {
@@ -108,7 +117,6 @@
                         setLockoutTimer(prev => {
                             const newValue = prev - 1;
                             if (newValue <= 0) {
-                                // שחרור חסימה
                                 setAttempts(0);
                                 setStatus("idle");
                                 localStorage.removeItem('archive_lock_expiry');
@@ -139,9 +147,10 @@
                         localStorage.setItem('archive_attempts', '0');
                         localStorage.removeItem('archive_lock_expiry');
                         confetti({ 
-                            particleCount: 150, 
-                            spread: 70, 
-                            colors: ['#4b5320', '#c2b280', '#ffd700'] 
+                            particleCount: 200, 
+                            spread: 90, 
+                            origin: { y: 0.6 },
+                            colors: ['#4ade80', '#ffffff', '#166534'] 
                         });
                     } else {
                         const newAttempts = attempts + 1;
@@ -166,69 +175,80 @@
             };
 
             return (
-                <div className={`archive-case p-6 rounded-sm w-full max-w-sm ${status === 'error' ? 'shake' : ''}`}>
-                    <div className="absolute top-2 right-2 stamp text-[10px] typewriter-font">סודי ביותר</div>
+                <div className={`archive-case p-8 rounded-sm w-full max-w-sm flex flex-col items-center justify-center min-h-[400px] ${status === 'error' ? 'shake' : ''}`}>
                     
-                    <div className="text-center mb-6">
-                        <div className="w-16 h-16 bg-[#1a1c1a] border-2 border-[#3f453f] rounded-full mx-auto flex items-center justify-center mb-2 shadow-inner">
-                            <span className="text-2xl grayscale">
-                                {status === 'success' ? '🔓' : status === 'locked' ? '⏳' : '🔒'}
-                            </span>
-                        </div>
-                        <h1 className="typewriter-font text-xl text-gray-300">פענוח מסמך מסווג</h1>
-                        <div className="flex flex-col gap-1 mt-2">
-                            <p className="text-[10px] text-gray-500 uppercase tracking-widest">מדור היסטוריה</p>
-                            <p className="text-xs font-bold text-amber-600/70 uppercase">
-                                ניסיונות: {attempts} / {MAX_ATTEMPTS}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="paper-slot p-5 rounded-sm mb-6 relative overflow-hidden">
-                        <div className="flex justify-center gap-4 text-black text-4xl typewriter-font font-bold" dir="ltr">
-                            {input.padEnd(5, '•').split('').map((char, i) => (
-                                <span key={i} className={i < input.length ? (status === 'error' ? 'text-red-700' : 'text-black') : 'opacity-20'}>
-                                    {char}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3 mb-6" dir="ltr">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '⌫'].map(k => (
+                    {status === 'success' ? (
+                        /* הצגת הודעת הצלחה בלבד */
+                        <div className="text-center">
+                            <h1 className="success-text typewriter-font text-6xl font-bold">הצלחת!</h1>
                             <button 
-                                key={k}
-                                disabled={status !== 'idle'}
-                                onClick={() => {
-                                    if (k === 'C') setInput("");
-                                    else if (k === '⌫') setInput(p => p.slice(0, -1));
-                                    else handleNumber(k.toString());
-                                }}
-                                className="rusty-btn h-14 rounded-sm text-xl typewriter-font disabled:opacity-20 disabled:cursor-not-allowed"
-                            >{k}</button>
-                        ))}
-                    </div>
+                                onClick={() => window.location.reload()}
+                                className="mt-12 text-gray-500 text-xs typewriter-font border-b border-gray-700 hover:text-gray-300 transition-colors"
+                            >
+                                אפס מערכת
+                            </button>
+                        </div>
+                    ) : (
+                        /* הממשק הרגיל */
+                        <div className="w-full">
+                            <div className="absolute top-2 right-2 stamp text-[10px] typewriter-font">סודי ביותר</div>
+                            
+                            <div className="text-center mb-6">
+                                <div className="w-16 h-16 bg-[#1a1c1a] border-2 border-[#3f453f] rounded-full mx-auto flex items-center justify-center mb-2 shadow-inner">
+                                    <span className="text-2xl grayscale">
+                                        {status === 'locked' ? '⏳' : '🔒'}
+                                    </span>
+                                </div>
+                                <h1 className="typewriter-font text-xl text-gray-300">פענוח מסמך מסווג</h1>
+                                <p className="text-xs font-bold text-amber-600/70 mt-2">
+                                    ניסיונות: {attempts} / {MAX_ATTEMPTS}
+                                </p>
+                            </div>
 
-                    <button 
-                        onClick={onVerify}
-                        disabled={status !== 'idle' || input.length < 5}
-                        className={`w-full py-4 rounded-sm typewriter-font font-bold text-lg border-2 border-black shadow-lg transition-all
-                            ${status === 'success' ? 'bg-green-900 text-white border-green-400' : 'bg-[#4b5320] text-gray-200 hover:bg-[#565e25]'}
-                            disabled:opacity-40 disabled:grayscale active:bg-black`}
-                    >
-                        {status === 'loading' ? 'מפענח...' : status === 'locked' ? `מושבת (${lockoutTimer} שנ')` : 'אמת צופן'}
-                    </button>
+                            <div className="paper-slot p-5 rounded-sm mb-6 relative overflow-hidden">
+                                <div className="flex justify-center gap-4 text-black text-4xl typewriter-font font-bold" dir="ltr">
+                                    {input.padEnd(5, '•').split('').map((char, i) => (
+                                        <span key={i} className={i < input.length ? (status === 'error' ? 'text-red-700' : 'text-black') : 'opacity-20'}>
+                                            {char}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
 
-                    {status === 'error' && (
-                        <p className="text-center text-red-900 mt-4 typewriter-font text-[10px] font-bold uppercase bg-red-200/20 py-1 rounded">
-                            שגיאת פענוח: נותרו {MAX_ATTEMPTS - attempts} הזדמנויות
-                        </p>
-                    )}
+                            <div className="grid grid-cols-3 gap-3 mb-6" dir="ltr">
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'C', 0, '⌫'].map(k => (
+                                    <button 
+                                        key={k}
+                                        disabled={status !== 'idle'}
+                                        onClick={() => {
+                                            if (k === 'C') setInput("");
+                                            else if (k === '⌫') setInput(p => p.slice(0, -1));
+                                            else handleNumber(k.toString());
+                                        }}
+                                        className="rusty-btn h-14 rounded-sm text-xl typewriter-font disabled:opacity-20 disabled:cursor-not-allowed"
+                                    >{k}</button>
+                                ))}
+                            </div>
 
-                    {status === 'locked' && (
-                        <p className="text-center text-amber-500 mt-4 typewriter-font text-[10px] font-bold uppercase animate-pulse">
-                            אבטחה הופעלה. המתן לשחרור המערכת.
-                        </p>
+                            <button 
+                                onClick={onVerify}
+                                disabled={status !== 'idle' || input.length < 5}
+                                className="w-full py-4 rounded-sm typewriter-font font-bold text-lg border-2 border-black shadow-lg bg-[#4b5320] text-gray-200 hover:bg-[#565e25] disabled:opacity-40"
+                            >
+                                {status === 'loading' ? 'מפענח...' : status === 'locked' ? `מושבת (${lockoutTimer} שנ')` : 'אמת צופן'}
+                            </button>
+
+                            {status === 'error' && (
+                                <p className="text-center text-red-900 mt-4 typewriter-font text-[10px] font-bold uppercase bg-red-200/20 py-1 rounded">
+                                    שגיאת פענוח
+                                </p>
+                            )}
+                            {status === 'locked' && (
+                                <p className="text-center text-amber-500 mt-4 typewriter-font text-[10px] font-bold animate-pulse">
+                                    המערכת ננעלה
+                                </p>
+                            )}
+                        </div>
                     )}
                 </div>
             );
