@@ -89,7 +89,8 @@
         const { useState, useEffect } = React;
 
         function HistoricalLock() {
-            const SECRET_CODE = "46345";
+            // הקוד המעודכן ל-6 ספרות
+            const SECRET_CODE = "463475"; 
             const MAX_ATTEMPTS = 3;
             const LOCKOUT_DURATION = 30;
 
@@ -131,12 +132,14 @@
             }, [lockoutTimer]);
 
             const handleNumber = (n) => {
-                if (status !== "idle" || input.length >= 5) return;
+                // בדיקת אורך מקסימלי מעודכנת ל-6
+                if (status !== "idle" || input.length >= 6) return;
                 setInput(prev => prev + n);
             };
 
             const onVerify = () => {
-                if (input.length < 5 || status !== "idle") return;
+                // בדיקת אורך מינימלי מעודכנת ל-6
+                if (input.length < 6 || status !== "idle") return;
                 
                 setStatus("loading");
                 
@@ -178,7 +181,6 @@
                 <div className={`archive-case p-8 rounded-sm w-full max-w-sm flex flex-col items-center justify-center min-h-[400px] ${status === 'error' ? 'shake' : ''}`}>
                     
                     {status === 'success' ? (
-                        /* הצגת הודעת הצלחה בלבד */
                         <div className="text-center">
                             <h1 className="success-text typewriter-font text-6xl font-bold">הצלחת!</h1>
                             <button 
@@ -189,7 +191,6 @@
                             </button>
                         </div>
                     ) : (
-                        /* הממשק הרגיל */
                         <div className="w-full">
                             <div className="absolute top-2 right-2 stamp text-[10px] typewriter-font">סודי ביותר</div>
                             
@@ -206,8 +207,9 @@
                             </div>
 
                             <div className="paper-slot p-5 rounded-sm mb-6 relative overflow-hidden">
-                                <div className="flex justify-center gap-4 text-black text-4xl typewriter-font font-bold" dir="ltr">
-                                    {input.padEnd(5, '•').split('').map((char, i) => (
+                                <div className="flex justify-center gap-3 text-black text-3xl typewriter-font font-bold" dir="ltr">
+                                    {/* תצוגה מעודכנת ל-6 תווים */}
+                                    {input.padEnd(6, '•').split('').map((char, i) => (
                                         <span key={i} className={i < input.length ? (status === 'error' ? 'text-red-700' : 'text-black') : 'opacity-20'}>
                                             {char}
                                         </span>
@@ -232,7 +234,8 @@
 
                             <button 
                                 onClick={onVerify}
-                                disabled={status !== 'idle' || input.length < 5}
+                                // כפתור פעיל רק לאחר הקלדת 6 ספרות
+                                disabled={status !== 'idle' || input.length < 6}
                                 className="w-full py-4 rounded-sm typewriter-font font-bold text-lg border-2 border-black shadow-lg bg-[#4b5320] text-gray-200 hover:bg-[#565e25] disabled:opacity-40"
                             >
                                 {status === 'loading' ? 'מפענח...' : status === 'locked' ? `מושבת (${lockoutTimer} שנ')` : 'אמת צופן'}
